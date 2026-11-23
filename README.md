@@ -18,12 +18,13 @@ Open `index.html` in a browser. For install/offline testing, serve the folder ov
 
 ## GitHub Pages deployment
 
-The workflow at `.github/workflows/pages.yml` validates the manifest, icon files, inline JavaScript syntax, and puzzle count, then deploys the repository to GitHub Pages.
+The workflow at `.github/workflows/pages.yml` validates the manifest, icon files, inline JavaScript syntax, and puzzle count. GitHub Pages publishes the `main` branch root automatically.
 
 One-time repository setting:
 1. Open **Settings → Pages**.
-2. Under **Build and deployment → Source**, select **GitHub Actions**.
-3. Pushes to `main` will then validate and deploy the site.
+2. Under **Build and deployment → Source**, choose **Deploy from a branch**.
+3. Select `main` and `/ (root)`, then save.
+4. Pushes to `main` will trigger the Pages site update automatically.
 
 Expected site address: https://khaled010094.github.io/brain-challenge/
 
