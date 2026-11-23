@@ -38,4 +38,4 @@ A Play Store release still requires an Android package (AAB), a signing key, a G
 
 ## Privacy
 
-The game stores the best score in the browser's local storage. The current version does not include accounts, analytics, ads, or a remote leaderboard.
+See the bilingual [Privacy Policy](https://khaled010094.github.io/brain-challenge/privacy.html). The game stores the best score in the browser's local storage. The current version does not include accounts, analytics, ads, or a remote leaderboard.
