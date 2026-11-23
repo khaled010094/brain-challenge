@@ -23,11 +23,12 @@ jobs:
       - name: Validate PWA manifest and required files
         run: |
           node -e "const fs=require('fs'); const m=JSON.parse(fs.readFileSync('manifest.webmanifest','utf8')); for (const i of m.icons) { if (!fs.existsSync(i.src.replace(/^\.\//,''))) throw new Error('Missing icon: '+i.src); } if (!fs.existsSync('index.html') || !fs.existsSync('sw.js')) throw new Error('Missing app entry files'); console.log('Manifest and required PWA files are valid.');"
+      - name: Check game JavaScript syntax
+        run: |
+          node -e "const fs=require('fs'); const vm=require('vm'); const html=fs.readFileSync('index.html','utf8'); const scripts=[...html.matchAll(/<script>([\\s\\S]*?)<\\/script>/g)]; if (!scripts.length) throw new Error('No inline scripts found'); scripts.forEach((m,i)=>new vm.Script(m[1],{filename:'inline-'+i+'.js'})); console.log('All inline JavaScript parses successfully.');"
       - name: Check expected game content
         run: |
-          node -e "const fs=require('fs'); const s=fs.readFileSync('index.html','utf8'); if (!s.includes('const Q=[') || !s.includes('function start(') || !s.includes('function answer(')) throw new Error('Game code check failed'); console.log('Game source checks passed.');" 
-        env:
-          NODE_OPTIONS: --input-type=commonjs
+          node -e "const fs=require('fs'); const s=fs.readFileSync('index.html','utf8'); const count=(s.match(/\\{ar:/g)||[]).length; if (count!==50 || !s.includes('function start(') || !s.includes('function answer(')) throw new Error('Expected 50 puzzles and game functions; found '+count); console.log('Game source checks passed: '+count+' puzzles.');"
   deploy:
     needs: validate
     runs-on: ubuntu-latest
