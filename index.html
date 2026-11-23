@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<meta name="theme-color" content="#101b35">
+<meta name="description" content="Brain Challenge - Arabic and English puzzles to test your logic and intelligence.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
+<title>Brain Challenge | تحدي الذكاء</title>
+<style>
+:root{--bg:#101b35;--panel:#1b2a4b;--gold:#f5cf69;--mint:#52e0ce;--white:#f7f8fc;--muted:#b8c4dc;--red:#ff7777;--green:#6ee7a8}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#283b68 0,#101b35 55%);color:var(--white);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;min-height:100vh}
+.app{max-width:520px;margin:auto;padding:18px 16px 30px;min-height:100vh;display:flex;flex-direction:column}
+.top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+.brand{text-align:center;margin:32px 0 22px}.brain{font-size:54px}.brand h1{font-size:29px;margin:6px 0;color:var(--gold)}.brand p{margin:0;color:var(--muted)}
+.card{background:linear-gradient(150deg,#24385f,#192746);border:1px solid #52678f;border-radius:22px;padding:20px;box-shadow:0 16px 35px #0005}
+.hidden{display:none!important}.langrow{display:flex;gap:12px;margin:22px 0}.btn{border:0;border-radius:14px;padding:15px 16px;font-size:17px;font-weight:700;cursor:pointer;background:var(--mint);color:#10213a;flex:1}.btn.secondary{background:#31476e;color:white;border:1px solid #64799e}.btn.gold{background:var(--gold);color:#29213b}.btn:active{transform:scale(.98)}
+.stats{display:flex;justify-content:space-between;gap:8px;margin-bottom:16px}.stat{background:#12203c;padding:10px 12px;border-radius:12px;text-align:center;flex:1;font-size:14px;color:var(--muted)}.stat b{display:block;color:var(--gold);font-size:18px}
+.progress{height:8px;background:#0e1930;border-radius:20px;overflow:hidden;margin:12px 0 20px}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--mint),var(--gold));transition:width .3s}
+.level{color:var(--mint);font-weight:700;font-size:14px}.question{font-size:23px;line-height:1.55;margin:16px 0 22px;font-weight:750;min-height:100px}
+.answers{display:grid;gap:10px}.answer{width:100%;text-align:start;background:#30466d;color:white;border:1px solid #5a7098;border-radius:13px;padding:14px;font-size:17px;cursor:pointer}.answer.correct{background:#176b52;border-color:var(--green)}.answer.wrong{background:#713b4b;border-color:var(--red)}.answer:disabled{opacity:1}
+.feedback{min-height:28px;margin:12px 0;color:var(--gold);font-weight:700}.actions{display:flex;gap:10px;margin-top:8px}.actions .btn{font-size:14px;padding:12px 8px}
+.footer{text-align:center;color:#91a1c1;font-size:12px;margin-top:auto;padding-top:24px}
+.center{text-align:center}.big{font-size:48px}.small{color:var(--muted);font-size:14px;line-height:1.7}
+</style>
+</head>
+<body>
+<main class="app">
+ <div class="top"><span>🧠 BRAIN CHALLENGE</span><span id="langLabel">AR / EN</span></div>
+ <section id="home">
+  <div class="brand"><div class="brain">🧠</div><h1>تحدي الذكاء</h1><p>Brain Challenge</p></div>
+  <div class="card center">
+   <h2 id="welcome">اختبر ذكاءك وتحدى نفسك!</h2>
+   <p class="small" id="choose">اختر اللغة للبدء / Choose your language</p>
+   <div class="langrow"><button class="btn" onclick="start('ar')">العربية</button><button class="btn secondary" onclick="start('en')">English</button></div>
+   <p class="small" id="saved">ابدأ اللعب واجمع النقاط وافتح المراحل.</p><p class="small" id="bestHome">أفضل نتيجة: 0 / Best score: 0</p>
+  </div>
+ </section>
+ <section id="game" class="hidden">
+  <div class="stats"><div class="stat"><span id="scoreLabel">النقاط</span><b id="score">0</b></div><div class="stat"><span id="coinLabel">العملات</span><b id="coins">0</b></div><div class="stat"><span id="stageLabel">المرحلة</span><b id="stage">1</b></div></div>
+  <div class="card">
+   <div class="level" id="level">LEVEL 1</div><div class="progress"><div class="bar" id="bar"></div></div>
+   <div class="question" id="question"></div>
+   <div class="answers" id="answers"></div>
+   <div class="feedback" id="feedback" aria-live="polite"></div>
+   <div class="actions"><button class="btn gold" id="hint" onclick="hint()">💡 تلميح</button><button class="btn secondary" id="next" onclick="next()" disabled>التالي ←</button></div>
+  </div>
+  <p class="small center" id="note">أجب إجابة صحيحة لتحصل على 10 نقاط وعملة.</p>
+ </section>
+ <section id="done" class="hidden">
+  <div class="card center"><div class="big">🏆</div><h2 id="doneTitle">أحسنت!</h2><p id="doneText" class="small"></p><button class="btn" onclick="restart()" id="again">العب مرة أخرى</button><button class="btn secondary" style="margin-top:10px;width:100%" onclick="goHome()" id="homeBtn">الرئيسية</button></div>
+ </section>
+ <div class="footer">نسخة تجريبية مطوّرة • PWA 2.3 — 50 puzzles</div>
+</main>
+<script>
+const Q=[
+{ar:"ما الشيء الذي له أسنان ولا يعض؟",en:"What has teeth but cannot bite?",a:["المشط","المنشار","السمكة","المفتاح"],b:["A comb","A saw","A fish","A key"],c:0,h:"نستخدمه لترتيب الشعر.",he:"You use it to arrange hair."},
+{ar:"ما الشيء الذي كلما أخذت منه كبر؟",en:"What gets bigger the more you take away?",a:["الحفرة","الكتاب","الشمعة","الباب"],b:["A hole","A book","A candle","A door"],c:0,h:"تجده في الأرض وقد تحفره.",he:"You can dig it in the ground."},
+{ar:"كم شهرًا في السنة يحتوي على 28 يومًا؟",en:"How many months have 28 days?",a:["شهر واحد","6 أشهر","12 شهرًا","شهران"],b:["One","Six","Twelve","Two"],c:2,h:"كل شهور السنة فيها هذا العدد على الأقل.",he:"Every month has at least this many days."},
+{ar:"ما الشيء الذي يكتب ولا يقرأ؟",en:"What writes but cannot read?",a:["القلم","الطالب","الكتاب","المعلم"],b:["A pen","A student","A book","A teacher"],c:0,h:"تحمله في يدك لتكتب.",he:"You hold it in your hand to write."},
+{ar:"ما الشيء الذي له عين ولا يرى؟",en:"What has an eye but cannot see?",a:["الإبرة","القط","الإنسان","الكاميرا"],b:["A needle","A cat","A person","A camera"],c:0,h:"نستخدمه في الخياطة.",he:"It is used for sewing."},
+{ar:"ما الشيء الذي يدخل الماء ولا يبتل؟",en:"What enters water but never gets wet?",a:["الضوء","الورق","الخشب","القماش"],b:["Light","Paper","Wood","Cloth"],c:0,h:"يساعدك على الرؤية.",he:"It helps you see."},
+{ar:"ما الشيء الذي له رقبة بلا رأس؟",en:"What has a neck but no head?",a:["الزجاجة","الكرسي","الساعة","الحذاء"],b:["A bottle","A chair","A clock","A shoe"],c:0,h:"قد تضع فيه الماء.",he:"You can put water in it."},
+{ar:"ما الشيء الذي يسمع بلا أذن ويتكلم بلا لسان؟",en:"What can hear and speak without ears or a tongue?",a:["الصدى","الراديو","الكتاب","القلم"],b:["An echo","A radio","A book","A pen"],c:0,h:"يردد صوتك عندما تنادي.",he:"It repeats your voice when you call."},
+{ar:"إذا كان معك 3 تفاحات وأخذت 2، فكم تفاحة معك؟",en:"You have 3 apples and take away 2. How many do you have?",a:["1","2","3","5"],b:["1","2","3","5"],c:1,h:"السؤال يسأل عما أخذته أنت.",he:"It asks how many you took."},
+{ar:"ما العدد التالي: 2، 4، 8، 16، ؟",en:"What comes next: 2, 4, 8, 16, ?",a:["18","24","32","30"],b:["18","24","32","30"],c:2,h:"كل عدد يساوي ضعف السابق.",he:"Each number is double the previous one."}
+,{ar:"إذا كانت الساعة 3:15، فكم دقيقة حتى 4:00؟",en:"If it is 3:15, how many minutes until 4:00?",a:["30","45","15","60"],b:["30","45","15","60"],c:1,h:"احسب الفرق بين 15 و60 دقيقة.",he:"Find the difference between 15 and 60 minutes."}
+,{ar:"ما العدد الذي إذا ضربته في نفسه كان الناتج 49؟",en:"Which number multiplied by itself equals 49?",a:["6","7","8","9"],b:["6","7","8","9"],c:1,h:"إنه بين 6 و8.",he:"It is between 6 and 8."}
+,{ar:"لدى أحمد 12 قطعة حلوى، أعطى نصفها لصديقه. كم بقي معه؟",en:"Ahmed has 12 candies and gives half to a friend. How many remain?",a:["4","5","6","8"],b:["4","5","6","8"],c:2,h:"النصف يعني القسمة على 2.",he:"Half means divide by 2."}
+,{ar:"أي كلمة لا تنتمي للمجموعة: تفاح، موز، جزر، عنب؟",en:"Which word does not belong: apple, banana, carrot, grape?",a:["تفاح","موز","جزر","عنب"],b:["Apple","Banana","Carrot","Grape"],c:2,h:"ثلاثة منها فواكه.",he:"Three of them are fruits."}
+,{ar:"ما العدد التالي: 5، 10، 20، 40، ؟",en:"What comes next: 5, 10, 20, 40, ?",a:["45","60","80","100"],b:["45","60","80","100"],c:2,h:"ضاعف العدد في كل مرة.",he:"Double the number each time."}
+,{ar:"كم ضلعًا للمسدس؟",en:"How many sides does a hexagon have?",a:["5","6","7","8"],b:["5","6","7","8"],c:1,h:"اسمه يبدأ بمقطع يعني ستة.",he:"Its name begins with a prefix meaning six."}
+,{ar:"إذا تجاوزت المتسابق صاحب المركز الثاني، فما مركزك؟",en:"If you pass the person in second place, what place are you in?",a:["الأول","الثاني","الثالث","الرابع"],b:["First","Second","Third","Fourth"],c:1,h:"أنت تأخذ مكان الشخص الذي تجاوزته.",he:"You take the place of the person you passed."}
+,{ar:"ما العدد الناقص: 3، 6، 9، ؟، 15",en:"What number is missing: 3, 6, 9, ?, 15",a:["10","11","12","13"],b:["10","11","12","13"],c:2,h:"أضف 3 في كل خطوة.",he:"Add 3 each time."}
+,{ar:"أيهما أثقل: كيلو حديد أم كيلو قطن؟",en:"Which is heavier: a kilogram of iron or a kilogram of cotton?",a:["الحديد","القطن","متساويان","حسب الحجم"],b:["Iron","Cotton","They weigh the same","Depends on size"],c:2,h:"كلاهما كيلوغرام واحد.",he:"Both are one kilogram."}
+,{ar:"كم زاوية قائمة في المستطيل؟",en:"How many right angles does a rectangle have?",a:["2","3","4","5"],b:["2","3","4","5"],c:2,h:"كل أركان المستطيل قائمة.",he:"Every corner of a rectangle is a right angle."}
+,{ar:"إذا كان اليوم الثلاثاء، فما اليوم بعد 10 أيام؟",en:"If today is Tuesday, what day will it be in 10 days?",a:["الخميس","الجمعة","السبت","الأحد"],b:["Thursday","Friday","Saturday","Sunday"],c:1,h:"سبعة أيام تعيدك إلى الثلاثاء، ثم احسب 3 أيام.",he:"Seven days brings you back to Tuesday; count three more."}
+,{ar:"ما العدد الأولي من بين هذه الأعداد؟",en:"Which of these numbers is prime?",a:["9","15","17","21"],b:["9","15","17","21"],c:2,h:"لا يقبل القسمة إلا على 1 ونفسه.",he:"It is divisible only by 1 and itself."}
+,{ar:"إذا كان محيط مربع 20 سم، فما طول ضلعه؟",en:"A square has a perimeter of 20 cm. How long is one side?",a:["4 سم","5 سم","10 سم","20 سم"],b:["4 cm","5 cm","10 cm","20 cm"],c:1,h:"المحيط يساوي أربعة أضلاع متساوية.",he:"The perimeter is four equal sides."}
+,{ar:"ما الحرف التالي في النمط: A، C، E، G، ؟",en:"What comes next: A, C, E, G, ?",a:["H","I","J","K"],b:["H","I","J","K"],c:1,h:"نتحرك حرفين كل مرة.",he:"Move forward two letters each time."}
+,{ar:"لدى سارة 3 صناديق، في كل صندوق 4 كرات. كم كرة لديها؟",en:"Sara has 3 boxes with 4 balls in each. How many balls?",a:["7","9","12","16"],b:["7","9","12","16"],c:2,h:"اضرب 3 في 4.",he:"Multiply 3 by 4."}
+,{ar:"ما العدد الذي يساوي ربع 100؟",en:"What number is one quarter of 100?",a:["20","25","40","50"],b:["20","25","40","50"],c:1,h:"اقسم 100 على 4.",he:"Divide 100 by 4."}
+,{ar:"قطار كهربائي يسير شمالًا والريح جنوبًا. إلى أين يتجه الدخان؟",en:"An electric train travels north and the wind blows south. Which way does its smoke go?",a:["شمالًا","جنوبًا","شرقًا","لا يوجد دخان"],b:["North","South","East","There is no smoke"],c:3,h:"تذكر نوع القطار.",he:"Think about the type of train."}
+,{ar:"ما العدد التالي: 1، 1، 2، 3، 5، 8، ؟",en:"What comes next: 1, 1, 2, 3, 5, 8, ?",a:["11","12","13","15"],b:["11","12","13","15"],c:2,h:"اجمع آخر عددين للحصول على التالي.",he:"Add the last two numbers to get the next."}
+,{ar:"إذا احتاج 5 عمال إلى 5 أيام لإنجاز عمل، فكم يحتاج 10 عمال بالمعدل نفسه؟",en:"If 5 workers take 5 days to finish a job, how long would 10 equally fast workers take?",a:["10 أيام","5 أيام","2.5 يوم","يوم واحد"],b:["10 days","5 days","2.5 days","1 day"],c:2,h:"مضاعفة عدد العمال تقلل الوقت إلى النصف.",he:"Doubling the workers halves the time."}
+,{ar:"شمعتان تختلفان في الطول، لكننا لا نعرف سرعة احتراق كل منهما. ماذا نستنتج عن وقت احتراقهما؟",en:"Two candles have different lengths, but their burn rates are unknown. What can we conclude about their burn times?",a:["الأطول دائمًا أطول وقتًا","الأقصر دائمًا أطول وقتًا","لا يمكن تحديد ذلك من الطول وحده","تحترقان في الوقت نفسه دائمًا"],b:["The longer always takes longer","The shorter always takes longer","Length alone is not enough to tell","They always take the same time"],c:2,h:"الطول وحده لا يخبرنا بسرعة الاحتراق.",he:"Length alone does not tell us the burn rate."},
+{ar:"ما ناتج 15 + 27؟",en:"What is 15 + 27?",a:["40", "41", "42", "43"],b:["40", "41", "42", "43"],c:2,h:"اجمع 15 إلى 20 ثم أضف 7.",he:"Add 15 to 20, then add 7."},
+{ar:"أي شكل له خمسة أضلاع؟",en:"Which shape has five sides?",a:["المثلث", "المربع", "الخماسي", "السداسي"],b:["Triangle", "Square", "Pentagon", "Hexagon"],c:2,h:"اسمه مرتبط بالعدد خمسة.",he:"Its name is related to the number five."},
+{ar:"إذا كان 4 × ؟ = 36، فما العدد المفقود؟",en:"If 4 × ? = 36, what is the missing number?",a:["7", "8", "9", "10"],b:["7", "8", "9", "10"],c:2,h:"اقسم 36 على 4.",he:"Divide 36 by 4."},
+{ar:"ما عكس كلمة «نادر»؟",en:"What is the opposite of “rare”?",a:["شائع", "قديم", "صغير", "بعيد"],b:["Common", "Old", "Small", "Far"],c:0,h:"شيء يحدث كثيرًا.",he:"Something that happens often."},
+{ar:"كم دقيقة في ساعتين ونصف؟",en:"How many minutes are in two and a half hours?",a:["120", "130", "150", "180"],b:["120", "130", "150", "180"],c:2,h:"الساعة 60 دقيقة.",he:"One hour has 60 minutes."},
+{ar:"ما العدد التالي: 100، 90، 80، 70، ؟",en:"What comes next: 100, 90, 80, 70, ?",a:["50", "55", "60", "65"],b:["50", "55", "60", "65"],c:2,h:"اطرح 10 كل مرة.",he:"Subtract 10 each time."},
+{ar:"أي من هذه الحيوانات من الثدييات؟",en:"Which of these animals is a mammal?",a:["التمساح", "الدلفين", "السلحفاة", "النسر"],b:["Crocodile", "Dolphin", "Turtle", "Eagle"],c:1,h:"يعيش في الماء لكنه يتنفس الهواء ويرضع صغاره.",he:"It lives in water, breathes air, and nurses its young."},
+{ar:"إذا كان نصف العدد 18، فما العدد كاملًا؟",en:"If half a number is 18, what is the whole number?",a:["9", "27", "36", "45"],b:["9", "27", "36", "45"],c:2,h:"اضرب 18 في 2.",he:"Multiply 18 by 2."},
+{ar:"أي شهر يأتي بعد سبتمبر؟",en:"Which month comes after September?",a:["أغسطس", "أكتوبر", "نوفمبر", "ديسمبر"],b:["August", "October", "November", "December"],c:1,h:"هو الشهر العاشر.",he:"It is the tenth month."},
+{ar:"لديك 24 قطعة، وزعتها بالتساوي على 6 أشخاص. كم قطعة لكل شخص؟",en:"You share 24 pieces equally among 6 people. How many per person?",a:["3", "4", "5", "6"],b:["3", "4", "5", "6"],c:1,h:"اقسم 24 على 6.",he:"Divide 24 by 6."},
+{ar:"ما العدد التالي: 2، 3، 5، 8، 12، ؟",en:"What comes next: 2, 3, 5, 8, 12, ?",a:["15", "16", "17", "18"],b:["15", "16", "17", "18"],c:2,h:"الفروق تزيد: 1 ثم 2 ثم 3 ثم 4.",he:"The increments grow: 1, 2, 3, 4."},
+{ar:"إذا كانت كل الورود نباتات، فهل كل النباتات ورود؟",en:"If all roses are plants, are all plants roses?",a:["نعم", "لا", "فقط في الربيع", "لا يمكن أن تكون الورود نباتات"],b:["Yes", "No", "Only in spring", "Roses cannot be plants"],c:1,h:"العلاقة ليست متبادلة بالضرورة.",he:"The relationship does not necessarily work both ways."},
+{ar:"ما قيمة 3² + 4؟",en:"What is 3² + 4?",a:["10", "12", "13", "16"],b:["10", "12", "13", "16"],c:2,h:"مربع 3 يساوي 9.",he:"3 squared equals 9."},
+{ar:"أي كلمة تُقرأ بالطريقة نفسها من اليمين واليسار؟",en:"Which word reads the same forward and backward?",a:["باب", "قلم", "كتاب", "مدرسة"],b:["Level", "Pencil", "Book", "School"],c:0,h:"تتكون من ثلاثة أحرف متناظرة.",he:"It has three letters and is a palindrome."},
+{ar:"إذا تحركت 3 خطوات شرقًا ثم 3 غربًا، أين تصبح؟",en:"If you move 3 steps east and then 3 west, where are you?",a:["3 خطوات شرقًا", "3 خطوات غربًا", "في نقطة البداية", "6 خطوات شرقًا"],b:["3 steps east", "3 steps west", "At the starting point", "6 steps east"],c:2,h:"الحركتان تتعادلان.",he:"The two movements cancel out."},
+{ar:"ما العدد الذي يقبل القسمة على 2 و3 معًا؟",en:"Which number is divisible by both 2 and 3?",a:["14", "18", "25", "35"],b:["14", "18", "25", "35"],c:1,h:"هو عدد زوجي ومجموع رقميه يقبل القسمة على 3.",he:"It is even, and its digits add to a multiple of 3."},
+{ar:"إذا استغرق صنع 4 أكواب 4 دقائق، فكم يستغرق صنع 8 أكواب بالسرعة نفسها؟",en:"If making 4 cups takes 4 minutes, how long for 8 cups at the same rate?",a:["4 دقائق", "8 دقائق", "12 دقيقة", "16 دقيقة"],b:["4 minutes", "8 minutes", "12 minutes", "16 minutes"],c:1,h:"كل كوب يحتاج دقيقة واحدة، والعمل بالتوازي.",he:"Each cup takes one minute, and they are made in parallel."},
+{ar:"ما الزاوية التي قياسها 180 درجة؟",en:"What angle measures 180 degrees?",a:["قائمة", "حادة", "مستقيمة", "منفرجة"],b:["Right", "Acute", "Straight", "Obtuse"],c:2,h:"تبدو كخط مستقيم.",he:"It forms a straight line."},
+{ar:"إذا كان اليوم الجمعة، فما اليوم قبل 3 أيام؟",en:"If today is Friday, what day was it 3 days ago?",a:["الاثنين", "الثلاثاء", "الأربعاء", "الخميس"],b:["Monday", "Tuesday", "Wednesday", "Thursday"],c:1,h:"ارجع يومًا في كل خطوة.",he:"Count backward one day at a time."},
+{ar:"ما العدد التالي: 1، 4، 9، 16، 25، ؟",en:"What comes next: 1, 4, 9, 16, 25, ?",a:["30", "32", "36", "49"],b:["30", "32", "36", "49"],c:2,h:"هذه مربعات الأعداد 1 إلى 5.",he:"These are the squares of 1 through 5."}
+];
+let lang='ar',idx=0,score=0,coins=0,answered=false,usedHint=false;
+const $=id=>document.getElementById(id);
+function show(id){['home','game','done'].forEach(x=>$(x).classList.toggle('hidden',x!==id))}
+function start(l){lang=l;idx=0;score=0;coins=0;show('game');labels();$('bestHome').textContent=(l==='ar'?'أفضل نتيجة: ':'Best score: ')+(localStorage.getItem('bc_best_'+l)||0);render()}
+function labels(){
+ const ar=lang==='ar';$('langLabel').textContent=ar?'العربية':'English';
+ $('scoreLabel').textContent=ar?'النقاط':'Score';$('coinLabel').textContent=ar?'العملات':'Coins';$('stageLabel').textContent=ar?'المرحلة':'Level';
+ $('hint').textContent=ar?'💡 تلميح':'💡 Hint';$('next').textContent=ar?'التالي ←':'Next →';$('note').textContent=ar?'أجب إجابة صحيحة لتحصل على 10 نقاط وعملة.':'Answer correctly to earn 10 points and 1 coin.';
+ $('doneTitle').textContent=ar?'أحسنت!':'Well done!';$('again').textContent=ar?'العب مرة أخرى':'Play again';$('homeBtn').textContent=ar?'الرئيسية':'Home';
+}
+function render(){
+ answered=false;usedHint=false;const q=Q[idx],ar=lang==='ar';$('score').textContent=score;$('coins').textContent=coins;$('stage').textContent=Math.floor(idx/5)+1;
+ const tier=idx<10?(ar?'سهل':'Easy'):idx<20?(ar?'متوسط':'Medium'):(ar?'صعب':'Hard');$('level').textContent=(ar?'المرحلة ':'LEVEL ')+(Math.floor(idx/5)+1)+' • '+tier+' • '+(idx+1)+'/'+Q.length;
+ $('bar').style.width=(idx/Q.length*100)+'%';$('question').textContent=ar?q.ar:q.en;$('feedback').textContent='';$('next').disabled=true;$('hint').disabled=false;
+ const arr=ar?q.a:q.b;$('answers').innerHTML='';
+ arr.forEach((v,i)=>{let b=document.createElement('button');b.className='answer';b.textContent=(i+1)+'. '+v;b.onclick=()=>answer(i,b);$('answers').appendChild(b)});
+}
+function answer(i,btn){
+ if(answered)return;answered=true;const q=Q[idx],ar=lang==='ar',buttons=[...document.querySelectorAll('.answer')];
+ buttons.forEach((b,n)=>{b.disabled=true;if(n===q.c)b.classList.add('correct')});
+ if(i===q.c){score+=10;coins++;$('feedback').textContent=ar?'إجابة صحيحة! +10 نقاط ⭐':'Correct! +10 points ⭐'}
+ else{btn.classList.add('wrong');$('feedback').textContent=ar?'إجابة غير صحيحة. حاول في السؤال التالي.':'Not quite. Try the next question.'}
+ $('score').textContent=score;$('coins').textContent=coins;const bestKey='bc_best_'+lang;const oldBest=Number(localStorage.getItem(bestKey)||0);if(score>oldBest){localStorage.setItem(bestKey,String(score));$('bestHome').textContent=(lang==='ar'?'أفضل نتيجة: ':'Best score: ')+score}$('next').disabled=false;$('hint').disabled=true;
+}
+function hint(){if(answered||usedHint)return;usedHint=true;const q=Q[idx];$('feedback').textContent=lang==='ar'?('تلميح: '+q.h):('Hint: '+q.he);$('hint').disabled=true}
+function next(){if(!answered)return;idx++;if(idx>=Q.length){show('done');$('doneText').textContent=lang==='ar'?`أنهيت ${Q.length} ألغاز! مجموع نقاطك ${score} وعملاتك ${coins}.`:`You completed ${Q.length} puzzles! Your score is ${score} and coins: ${coins}.`;return}render()}
+function restart(){start(lang)}
+function goHome(){show('home')}
+</script>
+<script>
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
