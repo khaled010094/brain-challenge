@@ -1,0 +1,48 @@
+name: Validate and deploy Brain Challenge
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Validate PWA manifest and required files
+        run: |
+          node -e "const fs=require('fs'); const m=JSON.parse(fs.readFileSync('manifest.webmanifest','utf8')); for (const i of m.icons) { if (!fs.existsSync(i.src.replace(/^\.\//,''))) throw new Error('Missing icon: '+i.src); } if (!fs.existsSync('index.html') || !fs.existsSync('sw.js')) throw new Error('Missing app entry files'); console.log('Manifest and required PWA files are valid.');"
+      - name: Check expected game content
+        run: |
+          node -e "const s=fs.readFileSync('index.html','utf8'); if (!s.includes('const Q=[') || !s.includes('function start(') || !s.includes('function answer(')) throw new Error('Game code check failed'); console.log('Game source checks passed.');" 
+        env:
+          NODE_OPTIONS: --input-type=commonjs
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
