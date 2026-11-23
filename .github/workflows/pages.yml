@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Validate PWA manifest and required files
         run: |
-          node -e "const fs=require('fs'); const m=JSON.parse(fs.readFileSync('manifest.webmanifest','utf8')); for (const i of m.icons) { if (!fs.existsSync(i.src.replace(/^\.\//,''))) throw new Error('Missing icon: '+i.src); } if (!fs.existsSync('index.html') || !fs.existsSync('sw.js')) throw new Error('Missing app entry files'); console.log('Manifest and required PWA files are valid.');"
+          node -e "const fs=require('fs'); const m=JSON.parse(fs.readFileSync('manifest.webmanifest','utf8')); for (const i of m.icons) { if (!fs.existsSync(i.src.replace(/^\.\//,''))) throw new Error('Missing icon: '+i.src); } if (!fs.existsSync('index.html') || !fs.existsSync('sw.js') || !fs.existsSync('privacy.html')) throw new Error('Missing app entry or privacy files'); console.log('Manifest and required PWA files are valid.');"
       - name: Check game JavaScript syntax
         run: |
           node -e "const fs=require('fs'); const vm=require('vm'); const html=fs.readFileSync('index.html','utf8'); const scripts=html.split('<script>').slice(1).map(x=>x.split('</script>')[0]); if (!scripts.length) throw new Error('No inline scripts found'); scripts.forEach((s,i)=>new vm.Script(s,{filename:'inline-'+i+'.js'})); console.log('All inline JavaScript parses successfully.');"
