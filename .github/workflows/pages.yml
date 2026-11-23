@@ -25,7 +25,7 @@ jobs:
           node -e "const fs=require('fs'); const m=JSON.parse(fs.readFileSync('manifest.webmanifest','utf8')); for (const i of m.icons) { if (!fs.existsSync(i.src.replace(/^\.\//,''))) throw new Error('Missing icon: '+i.src); } if (!fs.existsSync('index.html') || !fs.existsSync('sw.js')) throw new Error('Missing app entry files'); console.log('Manifest and required PWA files are valid.');"
       - name: Check expected game content
         run: |
-          node -e "const s=fs.readFileSync('index.html','utf8'); if (!s.includes('const Q=[') || !s.includes('function start(') || !s.includes('function answer(')) throw new Error('Game code check failed'); console.log('Game source checks passed.');" 
+          node -e "const fs=require('fs'); const s=fs.readFileSync('index.html','utf8'); if (!s.includes('const Q=[') || !s.includes('function start(') || !s.includes('function answer(')) throw new Error('Game code check failed'); console.log('Game source checks passed.');" 
         env:
           NODE_OPTIONS: --input-type=commonjs
   deploy:
