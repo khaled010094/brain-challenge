@@ -32,6 +32,10 @@ Expected site address: https://khaled010094.github.io/brain-challenge/
 
 After GitHub Pages is live, open the site in Chrome on Android and use **Install app** or **Add to Home screen** from the browser menu. This installs the web app; it is not yet a Google Play Store release.
 
+## Store listing preparation
+
+A draft Arabic and English Google Play store listing, asset checklist, and release blockers are maintained in [`docs/PLAY_STORE_LISTING.md`](docs/PLAY_STORE_LISTING.md).
+
 ## Google Play status
 
 A Play Store release still requires an Android package (AAB), a signing key, a Google Play Console developer account, store listing assets and policy declarations, and testing. These steps must be completed and approved before public release.
