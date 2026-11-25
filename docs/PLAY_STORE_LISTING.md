@@ -9,8 +9,8 @@ This is a preparation draft. It is not a published store listing.
 - App type: Game
 - Suggested category: Puzzle
 - Suggested pricing: Free
-- Version draft: 1.0.0
-- Android application ID: NOT SET — choose and confirm a permanent package ID before the first AAB upload. Do not guess or change it after publishing.
+- Android version: 1.0.2 (versionCode 3)
+- Android application ID: `com.brainchallenge.app` (set in the Android project; keep it unchanged after publishing).
 
 ## Short description (Arabic)
 
@@ -78,7 +78,7 @@ Note: The current version does not include ads or in-app purchases.
 ## Release blockers
 
 1. Developer account registration and identity verification are not complete until Google confirms them.
-2. A signed Android App Bundle (AAB) has not been produced.
+2. A signed Android App Bundle (AAB) has not been produced. The current CI output is a debug APK for installation/testing, not a Play Store release bundle.
 3. A permanent Android application ID and signing approach must be selected.
 4. The Android build must be tested on a real device.
 5. Store graphics and final screenshots must be prepared.
