@@ -23,18 +23,21 @@ public class MainActivity extends Activity {
         settings.setDatabaseEnabled(true);
         settings.setLoadsImagesAutomatically(true);
         settings.setAllowFileAccess(true);
-        settings.setMediaPlaybackRequiresUserGesture(true);
+        settings.setMediaPlaybackRequiresUserGesture(false);
         webView.setWebViewClient(new WebViewClient() {
             @Override public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                String css = "document.body.style.background='linear-gradient(rgba(7,15,35,.58),rgba(7,15,35,.80)),url(file:///android_asset/mariam_background.webp) center/cover fixed no-repeat';" +
-                    "var app=document.querySelector('.app');if(app){app.style.background='transparent';}";
-                view.evaluateJavascript("(function(){"+css+"})()", null);
+                String css = "body{background:#101b35 url('file:///android_asset/mariam_background.webp') center center / cover fixed no-repeat !important;}" +
+                    "body::before{content:'';position:fixed;inset:0;background:linear-gradient(rgba(7,15,35,.55),rgba(7,15,35,.78));pointer-events:none;z-index:-1;}" +
+                    ".app{background:transparent !important;position:relative;z-index:0;}" +
+                    ".card{background:rgba(27,42,75,.82) !important;backdrop-filter:blur(2px);}";
+                view.evaluateJavascript("(function(){var s=document.createElement('style');s.textContent=" +
+                    "'" + css.replace("\\", "\\\\").replace("'", "\\'") + "';" +
+                    "document.head.appendChild(s);})();", null);
             }
         });
         webView.setWebChromeClient(new WebChromeClient());
         webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        // The complete game and Mariam background are bundled inside the APK; it works offline.
         webView.loadUrl("file:///android_asset/index.html");
     }
 

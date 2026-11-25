@@ -27,7 +27,7 @@
 </head>
 <body>
 <main class="app">
- <div class="top"><span>🧠 BRAIN CHALLENGE</span><span id="langLabel">AR / EN</span></div>
+ <div class="top"><span>🧠 BRAIN CHALLENGE</span><span id="langLabel">AR / EN</span><button id="audioToggle" class="btn secondary" style="flex:0;padding:8px 12px;font-size:13px" type="button" onclick="toggleAudio()">🔊 الصوت</button></div>
  <section id="home">
   <div class="brand"><div class="brain">🧠</div><h1>تحدي الذكاء</h1><p>Brain Challenge</p></div>
   <div class="card center">
@@ -106,10 +106,23 @@ const Q=[
 {ar:"إذا كان اليوم الجمعة، فما اليوم قبل 3 أيام؟",en:"If today is Friday, what day was it 3 days ago?",a:["الاثنين", "الثلاثاء", "الأربعاء", "الخميس"],b:["Monday", "Tuesday", "Wednesday", "Thursday"],c:1,h:"ارجع يومًا في كل خطوة.",he:"Count backward one day at a time."},
 {ar:"ما العدد التالي: 1، 4، 9، 16، 25، ؟",en:"What comes next: 1, 4, 9, 16, 25, ?",a:["30", "32", "36", "49"],b:["30", "32", "36", "49"],c:2,h:"هذه مربعات الأعداد 1 إلى 5.",he:"These are the squares of 1 through 5."}
 ];
+
+let audioCtx=null,musicTimer=null,musicOn=true,musicStep=0;
+function audioReady(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;if(!audioCtx)audioCtx=new AC();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx}
+function tone(freq,duration=.12,type='sine',volume=.045,delay=0){const c=audioReady();if(!c)return;const o=c.createOscillator(),g=c.createGain(),t=c.currentTime+delay;o.type=type;o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(volume,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+duration);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+duration+.02)}
+function tapSound(){tone(620,.045,'triangle',.025)}
+function goodSound(){tone(660,.12,'sine',.05);tone(880,.18,'sine',.045,.11);tone(1046,.22,'sine',.04,.24)}
+function badSound(){tone(220,.16,'triangle',.045);tone(165,.2,'triangle',.035,.13)}
+const melody=[261.63,329.63,392,329.63,293.66,349.23,440,349.23,261.63,329.63,392,523.25,440,392,349.23,293.66];
+function musicTick(){if(!musicOn)return;tone(melody[musicStep%melody.length],.34,'sine',.012);if(musicStep%4===0)tone(130.81,.42,'sine',.009);musicStep++}
+function startMusic(){audioReady();if(!musicOn||musicTimer)return;musicTick();musicTimer=setInterval(musicTick,430)}
+function toggleAudio(){musicOn=!musicOn;const b=document.getElementById('audioToggle');if(b)b.textContent=musicOn?'🔊 الصوت':'🔇 صامت';if(musicOn)startMusic();else{if(musicTimer){clearInterval(musicTimer);musicTimer=null}}}
+document.addEventListener('click',e=>{if(e.target.closest('button')&&e.target.id!=='audioToggle')tapSound()},true);
+
 let lang='ar',idx=0,score=0,coins=0,answered=false,usedHint=false;
 const $=id=>document.getElementById(id);
 function show(id){['home','game','done'].forEach(x=>$(x).classList.toggle('hidden',x!==id))}
-function start(l){lang=l;idx=0;score=0;coins=0;show('game');labels();$('bestHome').textContent=(l==='ar'?'أفضل نتيجة: ':'Best score: ')+(localStorage.getItem('bc_best_'+l)||0);render()}
+function start(l){startMusic();lang=l;idx=0;score=0;coins=0;show('game');labels();$('bestHome').textContent=(l==='ar'?'أفضل نتيجة: ':'Best score: ')+(localStorage.getItem('bc_best_'+l)||0);render()}
 function labels(){
  const ar=lang==='ar';$('langLabel').textContent=ar?'العربية':'English';
  $('scoreLabel').textContent=ar?'النقاط':'Score';$('coinLabel').textContent=ar?'العملات':'Coins';$('stageLabel').textContent=ar?'المرحلة':'Level';
@@ -126,8 +139,8 @@ function render(){
 function answer(i,btn){
  if(answered)return;answered=true;const q=Q[idx],ar=lang==='ar',buttons=[...document.querySelectorAll('.answer')];
  buttons.forEach((b,n)=>{b.disabled=true;if(n===q.c)b.classList.add('correct')});
- if(i===q.c){score+=10;coins++;$('feedback').textContent=ar?'إجابة صحيحة! +10 نقاط ⭐':'Correct! +10 points ⭐'}
- else{btn.classList.add('wrong');$('feedback').textContent=ar?'إجابة غير صحيحة. حاول في السؤال التالي.':'Not quite. Try the next question.'}
+ if(i===q.c){goodSound();score+=10;coins++;$('feedback').textContent=ar?'إجابة صحيحة! +10 نقاط ⭐':'Correct! +10 points ⭐'}
+ else{badSound();btn.classList.add('wrong');$('feedback').textContent=ar?'إجابة غير صحيحة. حاول في السؤال التالي.':'Not quite. Try the next question.'}
  $('score').textContent=score;$('coins').textContent=coins;const bestKey='bc_best_'+lang;const oldBest=Number(localStorage.getItem(bestKey)||0);if(score>oldBest){localStorage.setItem(bestKey,String(score));$('bestHome').textContent=(lang==='ar'?'أفضل نتيجة: ':'Best score: ')+score}$('next').disabled=false;$('hint').disabled=true;
 }
 function hint(){if(answered||usedHint)return;usedHint=true;const q=Q[idx];$('feedback').textContent=lang==='ar'?('تلميح: '+q.h):('Hint: '+q.he);$('hint').disabled=true}
