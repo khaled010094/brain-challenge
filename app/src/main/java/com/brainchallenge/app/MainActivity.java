@@ -7,13 +7,9 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebSettings;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.Toast;
 
 public class MainActivity extends Activity {
     private WebView webView;
-    private static final String GAME_URL = "https://khaled010094.github.io/brain-challenge/";
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,7 +26,8 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient());
         webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        webView.loadUrl(GAME_URL);
+        // The complete game is bundled inside the APK; it works without internet.
+        webView.loadUrl("file:///android_asset/index.html");
     }
 
     @Override public void onBackPressed() {
