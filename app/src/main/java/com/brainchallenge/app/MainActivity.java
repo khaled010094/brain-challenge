@@ -22,11 +22,19 @@ public class MainActivity extends Activity {
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
         settings.setLoadsImagesAutomatically(true);
+        settings.setAllowFileAccess(true);
         settings.setMediaPlaybackRequiresUserGesture(true);
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+            @Override public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                String css = "document.body.style.background='linear-gradient(rgba(7,15,35,.58),rgba(7,15,35,.80)),url(file:///android_asset/mariam_background.webp) center/cover fixed no-repeat';" +
+                    "var app=document.querySelector('.app');if(app){app.style.background='transparent';}";
+                view.evaluateJavascript("(function(){"+css+"})()", null);
+            }
+        });
         webView.setWebChromeClient(new WebChromeClient());
         webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        // The complete game is bundled inside the APK; it works without internet.
+        // The complete game and Mariam background are bundled inside the APK; it works offline.
         webView.loadUrl("file:///android_asset/index.html");
     }
 
