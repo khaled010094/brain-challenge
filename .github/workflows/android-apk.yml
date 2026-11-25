@@ -34,14 +34,14 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Download app icon
+      - name: Build debug APK (retry transient Maven errors)
         run: |
-          mkdir -p app/src/main/res/mipmap-mdpi app/src/main/res/mipmap-hdpi app/src/main/res/mipmap-xhdpi app/src/main/res/mipmap-xxhdpi app/src/main/res/mipmap-xxxhdpi
-          for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
-            cp icon-512.png app/src/main/res/mipmap-$d/ic_launcher.png
+          for attempt in 1 2 3; do
+            gradle --no-daemon --refresh-dependencies assembleDebug && exit 0
+            echo "Build attempt $attempt failed; waiting before retry"
+            sleep 20
           done
-      - name: Build debug APK
-        run: gradle --no-daemon assembleDebug
+          exit 1
       - name: Upload installable APK
         uses: actions/upload-artifact@v4
         with:
